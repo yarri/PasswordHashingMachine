@@ -1,0 +1,24 @@
+{
+        "name": "yarri/password-hashing-machine",
+        "type": "library",
+        "description": "",
+        "keywords": ["password", "passwords", "hash", "hashing"],
+        "homepage": "https://github.com/yarri/PasswordHashingMachine",
+        "license": ["MIT"],
+        "authors": [
+                {
+                        "name": "Jaromir Tomek",
+                        "homepage": "https://github.com/yarri"
+                }
+        ],
+        "require": {
+                "php": ">=5.4.0"
+        },
+        "require-dev": {
+                "atk14/tester": "*",
+								"yarri/my-blowfish": "^1.4"
+        },
+        "autoload": {
+                "classmap": ["src"]
+        }
+}
