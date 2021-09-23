@@ -3,17 +3,28 @@ class PasswordHashingMachine {
 
 	protected $algorithms = [];
 
-	function __construct($hash_callback,$is_hash_callback,$check_password_callback = null){
-		return $this->addAlgorithm($hash_callback,$is_hash_callback,$check_password_callback);
-	}
+	function addAlgorithm($hash_callback,$is_hash_callback = null,$check_password_callback = null){
+		if(is_null($is_hash_callback)){
+			$hash = $hash_callback("check");
+			if(preg_match("/^[0-9a-f]+$/",$hash)){
+				$length = strlen($hash);
+				$pattern = "/^[0-9a-f]{".$length."}$/";
+				$is_hash_callback = function($password) use($pattern) {
+					return preg_match($pattern,$password);
+				};
+			}
+		}
+		if(is_null($is_hash_callback)){
+			throw new InvalidArgumentException('PasswordHashingMachine::addAlgorithm(): Missing 2nd parameter $is_hash_callback');
+		}
 
-	function addAlgorithm($hash_callback,$is_hash_callback,$check_password_callback = null){
 		if(is_null($check_password_callback)){
 			$check_password_callback = function($password,$hash) use($hash_callback){
 				$h = $hash_callback($password);
 				return strlen($h)>0 && $h===$hash;
 			};
 		}
+
 		$this->algorithms[] = [
 			"hash_callback" => $hash_callback,
 			"is_hash_callback" => $is_hash_callback,
@@ -34,12 +45,18 @@ class PasswordHashingMachine {
 	}
 
 	function hash($password){
+		if(!$this->algorithms){
+			throw new PasswordHashingMachine\NoAlgorithmException();
+		}
 		$callback = $this->algorithms[0]["hash_callback"];
 		$hash = $callback($password);
 		return $hash;
 	}
 
 	function isHash($password){
+		if(!$this->algorithms){
+			throw new PasswordHashingMachine\NoAlgorithmException();
+		}
 		foreach($this->algorithms as $algo){
 			$is_hash_callback = $algo["is_hash_callback"];
 		 	if($is_hash_callback($password)){
@@ -52,6 +69,10 @@ class PasswordHashingMachine {
 	function checkPassword($password,$hash){
 		$password = (string)$password;
 		$hash = (string)$hash;
+
+		if(!$this->algorithms){
+			throw new PasswordHashingMachine\NoAlgorithmException();
+		}
 
 		foreach($this->algorithms as $algo){
 			$is_hash_callback = $algo["is_hash_callback"];

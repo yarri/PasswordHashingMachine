@@ -2,23 +2,26 @@
 class TcPasswordHashingMachine extends TcBase {
 
 	function test(){
-		// default algorithm - blowfish privided by MyBlowfish
-		$phm = new PasswordHashingMachine(
+		$phm = new PasswordHashingMachine();
+
+		// the default algorithm - blowfish privided by MyBlowfish
+		$phm->addAlgorithm(
 			function($password){ return MyBlowfish::GetHash($password); },
 			function($password){ return MyBlowfish::IsHash($password); },
 			function($password,$hash){ return MyBlowfish::CheckPassword($password,$hash); }
 		);
 
 		// md5
+		// no check_password_callback specified
 		$phm->addAlgorithm(
 			function($password){ return md5($password); },
 			function($password){ return preg_match('/^[0-9a-f]{32}$/',$password); }
 		);
 
 		// md5 with salt
+		// no is_hash_callback specified
 		$phm->addAlgorithm(
-			function($password){ return md5($password."|site_secret_key"); },
-			function($password){ return preg_match('/^[0-9a-f]{32}$/',$password); }
+			function($password){ return md5($password."|site_secret_key"); }
 		);
 
 		$blowfish = '$2a$06$rLxnps2CuGC/9BPCq3ms..7uaWETN6GPiVMXYYGWqdQoMZsDQ/kFG'; // hash for secret
@@ -44,5 +47,31 @@ class TcPasswordHashingMachine extends TcBase {
 		$this->assertTrue($phm->checkPassword("secret",$blowfish));
 		$this->assertTrue($phm->checkPassword("sesame",$md5));
 		$this->assertTrue($phm->checkPassword("summer",$md5_salt));
+
+		$this->assertFalse($phm->checkPassword($blowfish,"secret"));
+		$this->assertFalse($phm->checkPassword($md5,"sesame"));
+		$this->assertFalse($phm->checkPassword($md5_salt,"summer"));
+
+		$this->assertFalse($phm->checkPassword("secret","secret"));
+		$this->assertFalse($phm->checkPassword("",""));
+		$this->assertFalse($phm->checkPassword($blowfish,$blowfish));
+		$this->assertFalse($phm->checkPassword($md5,$md5));
+		$this->assertFalse($phm->checkPassword($md5_salt,$md5_salt));
+	}
+
+	function test_no_algorithm(){
+		$phm = new PasswordHashingMachine();
+
+		$exception_thrown = false;
+		$exception = null;
+		try {
+			$phm->isHash("check");
+		} catch(Exception $e) {
+			$exception_thrown = true;
+			$exception = $e;
+		}
+
+		$this->assertTrue($exception_thrown);
+		$this->assertEquals("No hashing algorithm was specified",$exception->getMessage());
 	}
 }
