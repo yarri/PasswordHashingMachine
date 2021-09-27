@@ -10,7 +10,7 @@ Usage
 
 ### 1. Create the hashing machine
 
-    $hasher = new PasswordHashingMachine();
+    $hasher = new Yarri\PasswordHashingMachine();
 
 ### 2. Add one or more hashing algorithms
 

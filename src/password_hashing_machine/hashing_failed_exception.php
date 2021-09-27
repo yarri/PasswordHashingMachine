@@ -1,5 +1,5 @@
 <?php
-namespace PasswordHashingMachine;
+namespace Yarri\PasswordHashingMachine;
 
 class HashingFailedException extends \Exception {
 

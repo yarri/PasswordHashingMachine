@@ -2,7 +2,7 @@
 class TcPasswordHashingMachine extends TcBase {
 
 	function test(){
-		$phm = new PasswordHashingMachine();
+		$phm = new Yarri\PasswordHashingMachine();
 
 		// the default algorithm - blowfish privided by MyBlowfish
 		$phm->addAlgorithm(
@@ -64,7 +64,7 @@ class TcPasswordHashingMachine extends TcBase {
 	}
 
 	function test_bcrypt(){
-		$phm = new PasswordHashingMachine();
+		$phm = new Yarri\PasswordHashingMachine();
 		$phm->addAlgorithm(
 			function($password){ return password_hash($password,PASSWORD_BCRYPT); },
 			function($password){ return !password_needs_rehash($password,PASSWORD_BCRYPT); },
@@ -88,7 +88,7 @@ class TcPasswordHashingMachine extends TcBase {
 	}
 
 	function test_NoAlgorithmException(){
-		$phm = new PasswordHashingMachine();
+		$phm = new Yarri\PasswordHashingMachine();
 
 		$exception_thrown = false;
 		$exception = null;
@@ -104,7 +104,7 @@ class TcPasswordHashingMachine extends TcBase {
 	}
 
 	function test_HashingFailedException(){
-		$phm = new PasswordHashingMachine();
+		$phm = new Yarri\PasswordHashingMachine();
 
 		$phm->addAlgorithm(
 			function($password){ return ""; }, // hash

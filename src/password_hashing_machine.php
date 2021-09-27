@@ -1,4 +1,6 @@
 <?php
+namespace Yarri;
+
 class PasswordHashingMachine {
 
 	protected $algorithms = [];
