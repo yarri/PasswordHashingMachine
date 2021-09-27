@@ -1,6 +1,8 @@
 PasswordHashingMachine
 ======================
 
+[![Build Status](https://app.travis-ci.com/yarri/PasswordHashingMachine.svg?branch=master)](https://app.travis-ci.com/yarri/PasswordHashingMachine)
+
 PasswordHashingMachine is tool for hashing and checking passwords using any hashing algorithm.
 
 More hashing algorithms can be registered to PasswordHashingMachine so legacy hashes can be also successfully handled.
@@ -47,7 +49,7 @@ Add another legacy hashing algorithms you need in your application.
 
 In fact, for algorithms that provides hexadecimal hashes like md5, sha1, sha2, only the first callback is required.
 
-    $hashes->addAlgorithm(
+    $hasher->addAlgorithm(
       function($password){ return sha1($password); }
     );
 
