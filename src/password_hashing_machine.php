@@ -50,6 +50,9 @@ class PasswordHashingMachine {
 		}
 		$callback = $this->algorithms[0]["hash_callback"];
 		$hash = $callback($password);
+		if(strlen($hash)==0){
+			throw new PasswordHashingMachine\HashingFailedException();
+		}
 		return $hash;
 	}
 
@@ -85,4 +88,8 @@ class PasswordHashingMachine {
 
 		return false;
 	}
+
+  function verify($password,$hash){
+    return $this->checkPassword($password,$hash);
+  }
 }

@@ -57,9 +57,37 @@ class TcPasswordHashingMachine extends TcBase {
 		$this->assertFalse($phm->checkPassword($blowfish,$blowfish));
 		$this->assertFalse($phm->checkPassword($md5,$md5));
 		$this->assertFalse($phm->checkPassword($md5_salt,$md5_salt));
+
+		// verify() is alias for checkPassword()
+		$this->assertTrue($phm->verify("secret",$blowfish));
+		$this->assertFalse($phm->verify($blowfish,"secret"));
 	}
 
-	function test_no_algorithm(){
+	function test_bcrypt(){
+		$phm = new PasswordHashingMachine();
+		$phm->addAlgorithm(
+			function($password){ return password_hash($password,PASSWORD_BCRYPT); },
+			function($password){ return !password_needs_rehash($password,PASSWORD_BCRYPT); },
+			function($password,$hash){ return password_verify($password,$hash); }
+		);
+
+		$hash = '$2y$10$l42sGbBVq6kz.Cm5I9lHseBs3l0xOyGkdKlvUVfliR8olJoz/gqBS'; // qwerty
+		$hash2 = $phm->hash("qwerty");
+		$this->assertNotEquals($hash,$hash2);
+
+		$this->assertTrue($phm->isHash($hash));
+		$this->assertTrue($phm->isHash($hash2));
+		$this->assertFalse($phm->isHash("qwerty"));
+		$this->assertFalse($phm->isHash(""));
+		$this->assertFalse($phm->isHash(null));
+
+		$this->assertEquals($hash,$phm->filter($hash));
+
+		$this->assertTrue($phm->checkPassword("qwerty",$hash));
+		$this->assertFalse($phm->checkPassword("badTry",$hash));
+	}
+
+	function test_NoAlgorithmException(){
 		$phm = new PasswordHashingMachine();
 
 		$exception_thrown = false;
@@ -73,5 +101,27 @@ class TcPasswordHashingMachine extends TcBase {
 
 		$this->assertTrue($exception_thrown);
 		$this->assertEquals("No hashing algorithm was specified",$exception->getMessage());
+	}
+
+	function test_HashingFailedException(){
+		$phm = new PasswordHashingMachine();
+
+		$phm->addAlgorithm(
+			function($password){ return ""; }, // hash
+			function($password){ return false; }, // is hash
+			function($password,$hash){ return false; } // verify
+		);
+
+		$exception_thrown = false;
+		$exception = null;
+		try {
+			$phm->hash("test");
+		} catch(Exception $e) {
+			$exception_thrown = true;
+			$exception = $e;
+		}
+
+		$this->assertTrue($exception_thrown);
+		$this->assertEquals("Hashing failed",$exception->getMessage());
 	}
 }
