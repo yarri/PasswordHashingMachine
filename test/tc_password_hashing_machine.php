@@ -44,13 +44,29 @@ class TcPasswordHashingMachine extends TcBase {
 		$this->assertTrue($phm->isHash($md5));
 		$this->assertTrue($phm->isHash($md5_salt));
 
-		$this->assertTrue($phm->checkPassword("secret",$blowfish));
-		$this->assertTrue($phm->checkPassword("sesame",$md5));
-		$this->assertTrue($phm->checkPassword("summer",$md5_salt));
+		$is_legacy_hash = null;
+		$this->assertTrue($phm->checkPassword("secret",$blowfish,$is_legacy_hash));
+		$this->assertFalse($is_legacy_hash);
+		//
+		$is_legacy_hash = null;
+		$this->assertTrue($phm->checkPassword("sesame",$md5,$is_legacy_hash));
+		$this->assertTrue($is_legacy_hash);
+		//
+		$is_legacy_hash = null;
+		$this->assertTrue($phm->checkPassword("summer",$md5_salt,$is_legacy_hash));
+		$this->assertTrue($is_legacy_hash);
 
-		$this->assertFalse($phm->checkPassword($blowfish,"secret"));
+		$is_legacy_hash = null;
+		$this->assertFalse($phm->checkPassword($blowfish,"secret"),$is_legacy_hash);
+		$this->assertNull($is_legacy_hash);
+		//
+		$is_legacy_hash = null;
 		$this->assertFalse($phm->checkPassword($md5,"sesame"));
+		$this->assertNull($is_legacy_hash);
+		//
+		$is_legacy_hash = null;
 		$this->assertFalse($phm->checkPassword($md5_salt,"summer"));
+		$this->assertNull($is_legacy_hash);
 
 		$this->assertFalse($phm->checkPassword("secret","secret"));
 		$this->assertFalse($phm->checkPassword("",""));
@@ -61,6 +77,14 @@ class TcPasswordHashingMachine extends TcBase {
 		// verify() is alias for checkPassword()
 		$this->assertTrue($phm->verify("secret",$blowfish));
 		$this->assertFalse($phm->verify($blowfish,"secret"));
+
+		$is_legacy_hash = null;
+		$this->assertTrue($phm->verify("secret",$blowfish,$is_legacy_hash));
+		$this->assertFalse($is_legacy_hash);
+		//
+		$is_legacy_hash = null;
+		$this->assertFalse($phm->verify($blowfish,"secret"));
+		$this->assertNull($is_legacy_hash);
 	}
 
 	function test_bcrypt(){
@@ -83,8 +107,13 @@ class TcPasswordHashingMachine extends TcBase {
 
 		$this->assertEquals($hash,$phm->filter($hash));
 
-		$this->assertTrue($phm->checkPassword("qwerty",$hash));
+		$is_legacy_hash = null;
+		$this->assertTrue($phm->checkPassword("qwerty",$hash,$is_legacy_hash));
+		$this->assertFalse($is_legacy_hash);
+		//
+		$is_legacy_hash = null;
 		$this->assertFalse($phm->checkPassword("badTry",$hash));
+		$this->assertNull($is_legacy_hash);
 	}
 
 	function test_NoAlgorithmException(){

@@ -74,6 +74,18 @@ In fact, for algorithms that provides hexadecimal hashes like md5, sha1, sha2, o
     // verifying passwords
     $hasher->verify($password,$hash); // true or false
 
+After a successful verification, the legacy hash can be detected and the password re-hashing using the current hashing algorithm can be easily realized.
+
+    $hash = $user->getPasswordHash();
+    if($hasher->verify($password,$hash,$is_legacy_hash)){
+      // the user is verified
+      if($is_legacy_hash){
+         // transparent password re-hashing using the current hashing algorithm
+         $current_hash = $hasher->hash($password);
+         $user->setPasswordHash($current_hash);
+      }
+    }
+
 Installation
 ------------
 

@@ -71,19 +71,21 @@ class PasswordHashingMachine {
 		return false;
 	}
 	
-	function checkPassword($password,$hash){
+	function checkPassword($password,$hash,&$is_legacy_hash = null){
 		$password = (string)$password;
 		$hash = (string)$hash;
+		$is_legacy_hash = null;
 
 		if(!$this->algorithms){
 			throw new PasswordHashingMachine\NoAlgorithmException();
 		}
 
-		foreach($this->algorithms as $algo){
+		foreach($this->algorithms as $i => $algo){
 			$is_hash_callback = $algo["is_hash_callback"];
 			$check_password_callback = $algo["check_password_callback"];
 			if(!$is_hash_callback($hash)){ continue; }
 			if($check_password_callback($password,$hash)){
+				$is_legacy_hash = $i>0;
 				return true;
 			}
 		}
@@ -91,7 +93,7 @@ class PasswordHashingMachine {
 		return false;
 	}
 
-  function verify($password,$hash){
-    return $this->checkPassword($password,$hash);
+  function verify($password,$hash,&$is_legacy_hash = null){
+    return $this->checkPassword($password,$hash,$is_legacy_hash);
   }
 }
