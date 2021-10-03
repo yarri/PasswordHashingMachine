@@ -1,8 +1,8 @@
 {
         "name": "yarri/password-hashing-machine",
         "type": "library",
-        "description": "",
-        "keywords": ["password", "passwords", "hash", "hashing"],
+        "description": "Tool for hashing and checking passwords using a required (registered) hashing algorithm. It can handle more (legacy) hashing algorithms.",
+        "keywords": ["password", "passwords", "hash", "hashing", "hasher","legacy"],
         "homepage": "https://github.com/yarri/PasswordHashingMachine",
         "license": ["MIT"],
         "authors": [

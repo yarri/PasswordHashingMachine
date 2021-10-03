@@ -3,7 +3,7 @@ PasswordHashingMachine
 
 [![Build Status](https://app.travis-ci.com/yarri/PasswordHashingMachine.svg?branch=master)](https://app.travis-ci.com/yarri/PasswordHashingMachine)
 
-PasswordHashingMachine is tool for hashing and checking passwords using any hashing algorithm.
+PasswordHashingMachine is tool for hashing and checking passwords using a required hashing algorithm, which must be registered from the outside.
 
 More hashing algorithms can be registered to PasswordHashingMachine so legacy hashes can be also successfully handled.
 
