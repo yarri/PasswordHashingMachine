@@ -71,7 +71,7 @@ class PasswordHashingMachine {
 		return false;
 	}
 	
-	function checkPassword($password,$hash,&$is_legacy_hash = null){
+	function verify($password,$hash,&$is_legacy_hash = null){
 		$password = (string)$password;
 		$hash = (string)$hash;
 		$is_legacy_hash = null;
@@ -93,7 +93,7 @@ class PasswordHashingMachine {
 		return false;
 	}
 
-  function verify($password,$hash,&$is_legacy_hash = null){
-    return $this->checkPassword($password,$hash,$is_legacy_hash);
+  function checkPassword($password,$hash,&$is_legacy_hash = null){
+    return $this->verify($password,$hash,$is_legacy_hash);
   }
 }
