@@ -91,7 +91,7 @@ class TcPasswordHashingMachine extends TcBase {
 		$phm = new Yarri\PasswordHashingMachine();
 		$phm->addAlgorithm(
 			function($password){ return password_hash($password,PASSWORD_BCRYPT); },
-			function($password){ return !password_needs_rehash($password,PASSWORD_BCRYPT,["cost" => 10]); },
+			function($password){ return preg_match('/^\$2[aby]\$(\d{2})\$[.\/0-9A-Za-z]{53}$/', $password); },
 			function($password,$hash){ return password_verify($password,$hash); }
 		);
 
