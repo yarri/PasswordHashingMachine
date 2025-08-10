@@ -57,7 +57,7 @@ class TcPasswordHashingMachine extends TcBase {
 		$this->assertTrue($is_legacy_hash);
 
 		$is_legacy_hash = null;
-		$this->assertFalse($phm->verify($blowfish,"secret"),$is_legacy_hash);
+		$this->assertFalse($phm->verify($blowfish,"secret",$is_legacy_hash));
 		$this->assertNull($is_legacy_hash);
 		//
 		$is_legacy_hash = null;
