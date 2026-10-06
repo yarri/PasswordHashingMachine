@@ -3,7 +3,7 @@ PasswordHashingMachine
 
 [![Tests](https://github.com/yarri/PasswordHashingMachine/actions/workflows/tests.yml/badge.svg)](https://github.com/yarri/PasswordHashingMachine/actions/workflows/tests.yml)
 
-PasswordHashingMachine is tool for hashing and checking passwords using a required hashing algorithm, which must be registered from the outside.
+PasswordHashingMachine is a tool for hashing and checking passwords using a required hashing algorithm, which must be registered from the outside.
 
 More hashing algorithms can be registered to PasswordHashingMachine so legacy hashes can be also successfully handled.
 
@@ -37,7 +37,7 @@ The optional 4th callback `$needs_rehash_callback` tells PasswordHashingMachine 
 produced by this very algorithm, is outdated (e.g. it uses a lower cost/round count than currently
 configured) and should be rehashed. When omitted, it defaults to always returning `false`.
 
-Add another legacy hashing algorithms you need in your application.
+Add any other legacy hashing algorithms you need in your application.
 
     // algorithm for md5 hashes with common salt
     $hasher->addAlgorithm(
@@ -53,7 +53,7 @@ Add another legacy hashing algorithms you need in your application.
       function($password,$hash){ return md5($password) === $hash; }
     );
 
-In fact, for algorithms that provides hexadecimal hashes like md5, sha1, sha2, only the first callback is required.
+In fact, for algorithms that provide hexadecimal hashes like md5, sha1, sha2, only the first callback is required.
 
     $hasher->addAlgorithm(
       function($password){ return sha1($password); }
@@ -100,6 +100,8 @@ Installation
 The best way how to install PasswordHashingMachine is to use the Composer:
 
     composer require yarri/password-hashing-machine
+
+Requires PHP 5.6 or newer.
 
 License
 -------
