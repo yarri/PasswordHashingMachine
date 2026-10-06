@@ -44,29 +44,29 @@ class TcPasswordHashingMachine extends TcBase {
 		$this->assertTrue($phm->isHash($md5));
 		$this->assertTrue($phm->isHash($md5_salt));
 
-		$is_legacy_hash = null;
-		$this->assertTrue($phm->verify("secret",$blowfish,$is_legacy_hash));
-		$this->assertFalse($is_legacy_hash);
+		$need_rehash = null;
+		$this->assertTrue($phm->verify("secret",$blowfish,$need_rehash));
+		$this->assertFalse($need_rehash);
 		//
-		$is_legacy_hash = null;
-		$this->assertTrue($phm->verify("sesame",$md5,$is_legacy_hash));
-		$this->assertTrue($is_legacy_hash);
+		$need_rehash = null;
+		$this->assertTrue($phm->verify("sesame",$md5,$need_rehash));
+		$this->assertTrue($need_rehash);
 		//
-		$is_legacy_hash = null;
-		$this->assertTrue($phm->verify("summer",$md5_salt,$is_legacy_hash));
-		$this->assertTrue($is_legacy_hash);
+		$need_rehash = null;
+		$this->assertTrue($phm->verify("summer",$md5_salt,$need_rehash));
+		$this->assertTrue($need_rehash);
 
-		$is_legacy_hash = null;
-		$this->assertFalse($phm->verify($blowfish,"secret",$is_legacy_hash));
-		$this->assertNull($is_legacy_hash);
+		$need_rehash = null;
+		$this->assertFalse($phm->verify($blowfish,"secret",$need_rehash));
+		$this->assertNull($need_rehash);
 		//
-		$is_legacy_hash = null;
+		$need_rehash = null;
 		$this->assertFalse($phm->verify($md5,"sesame"));
-		$this->assertNull($is_legacy_hash);
+		$this->assertNull($need_rehash);
 		//
-		$is_legacy_hash = null;
+		$need_rehash = null;
 		$this->assertFalse($phm->verify($md5_salt,"summer"));
-		$this->assertNull($is_legacy_hash);
+		$this->assertNull($need_rehash);
 
 		$this->assertFalse($phm->verify("secret","secret"));
 		$this->assertFalse($phm->verify("",""));
@@ -78,13 +78,40 @@ class TcPasswordHashingMachine extends TcBase {
 		$this->assertTrue($phm->checkPassword("secret",$blowfish));
 		$this->assertFalse($phm->checkPassword($blowfish,"secret"));
 
-		$is_legacy_hash = null;
-		$this->assertTrue($phm->checkPassword("secret",$blowfish,$is_legacy_hash));
-		$this->assertFalse($is_legacy_hash);
+		$need_rehash = null;
+		$this->assertTrue($phm->checkPassword("secret",$blowfish,$need_rehash));
+		$this->assertFalse($need_rehash);
 		//
-		$is_legacy_hash = null;
+		$need_rehash = null;
 		$this->assertFalse($phm->checkPassword($blowfish,"secret"));
-		$this->assertNull($is_legacy_hash);
+		$this->assertNull($need_rehash);
+	}
+
+	function test_needs_rehash_on_current_algorithm(){
+		// current algorithm is blowfish, but hashes with fewer rounds than
+		// MY_BLOWFISH_ROUNDS should be reported as needing a rehash, even
+		// though they were produced by the current (non-legacy) algorithm
+		$phm = new Yarri\PasswordHashingMachine();
+
+		$phm->addAlgorithm(
+			function($password){ return MyBlowfish::GetHash($password); },
+			function($password){ return MyBlowfish::IsHash($password); },
+			function($password,$hash){ return MyBlowfish::CheckPassword($password,$hash); },
+			function($hash){
+				return !preg_match('/^\$2[aby]\$'.sprintf('%02d',MY_BLOWFISH_ROUNDS).'\$/',$hash);
+			}
+		);
+
+		$up_to_date_hash = MyBlowfish::GetHash("secret");
+		$outdated_hash = MyBlowfish::GetHash("secret",["rounds" => MY_BLOWFISH_ROUNDS - 1]);
+
+		$need_rehash = null;
+		$this->assertTrue($phm->verify("secret",$up_to_date_hash,$need_rehash));
+		$this->assertFalse($need_rehash);
+
+		$need_rehash = null;
+		$this->assertTrue($phm->verify("secret",$outdated_hash,$need_rehash));
+		$this->assertTrue($need_rehash);
 	}
 
 	function test_bcrypt(){

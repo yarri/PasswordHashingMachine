@@ -19,7 +19,8 @@ Usage
     //  $hasher->addAlgorithm(
     //    callback $hash_callback,
     //    callback $is_hash_callback,
-    //    callback $check_password_callback
+    //    callback $check_password_callback,
+    //    callback $needs_rehash_callback
     //  );
 
 The first added algorithm is also the default hashing algorithm.
@@ -27,9 +28,14 @@ The first added algorithm is also the default hashing algorithm.
     // default hashing algorithm - bcrypt
     $hasher->addAlgorithm(
       function($password){ return password_hash($password,PASSWORD_BCRYPT); },
-      function($password){ return !password_needs_rehash($password,PASSWORD_BCRYPT); },
-      function($password,$hash){ return password_verify($password,$hash); }
+      function($hash){ return (bool)preg_match('/^\$2[aby]\$\d{2}\$[.\/0-9A-Za-z]{53}$/',$hash); },
+      function($password,$hash){ return password_verify($password,$hash); },
+      function($hash){ return password_needs_rehash($hash,PASSWORD_BCRYPT); }
     );
+
+The optional 4th callback `$needs_rehash_callback` tells PasswordHashingMachine that a hash, although
+produced by this very algorithm, is outdated (e.g. it uses a lower cost/round count than currently
+configured) and should be rehashed. When omitted, it defaults to always returning `false`.
 
 Add another legacy hashing algorithms you need in your application.
 
@@ -74,12 +80,14 @@ In fact, for algorithms that provides hexadecimal hashes like md5, sha1, sha2, o
     // verifying passwords
     $hasher->verify($password,$hash); // true or false
 
-After a successful verification, the legacy hash can be detected and the password re-hashing using the current hashing algorithm can be easily realized.
+After a successful verification, the need for re-hashing can be detected and the password re-hashing using
+the current hashing algorithm can be easily realized. This is the case either when the hash comes from a
+legacy algorithm, or when it comes from the current algorithm but is outdated (e.g. lower round count).
 
     $hash = $user->getPasswordHash();
-    if($hasher->verify($password,$hash,$is_legacy_hash)){
+    if($hasher->verify($password,$hash,$need_rehash)){
       // the user is verified
-      if($is_legacy_hash){
+      if($need_rehash){
          // transparent password re-hashing using the current hashing algorithm
          $current_hash = $hasher->hash($password);
          $user->setPasswordHash($current_hash);

@@ -5,7 +5,7 @@ class PasswordHashingMachine {
 
 	protected $algorithms = [];
 
-	function addAlgorithm($hash_callback,$is_hash_callback = null,$check_password_callback = null){
+	function addAlgorithm($hash_callback,$is_hash_callback = null,$check_password_callback = null,$needs_rehash_callback = null){
 		if(is_null($is_hash_callback)){
 			$hash = $hash_callback("check");
 			if(preg_match("/^[0-9a-f]+$/",$hash)){
@@ -27,10 +27,15 @@ class PasswordHashingMachine {
 			};
 		}
 
+		if(is_null($needs_rehash_callback)){
+			$needs_rehash_callback = function($hash){ return false; };
+		}
+
 		$this->algorithms[] = [
 			"hash_callback" => $hash_callback,
 			"is_hash_callback" => $is_hash_callback,
 			"check_password_callback" => $check_password_callback,
+			"needs_rehash_callback" => $needs_rehash_callback,
 		];
 	}
 
@@ -71,10 +76,10 @@ class PasswordHashingMachine {
 		return false;
 	}
 	
-	function verify($password,$hash,&$is_legacy_hash = null){
+	function verify($password,$hash,&$need_rehash = null){
 		$password = (string)$password;
 		$hash = (string)$hash;
-		$is_legacy_hash = null;
+		$need_rehash = null;
 
 		if(!$this->algorithms){
 			throw new PasswordHashingMachine\NoAlgorithmException();
@@ -83,9 +88,10 @@ class PasswordHashingMachine {
 		foreach($this->algorithms as $i => $algo){
 			$is_hash_callback = $algo["is_hash_callback"];
 			$check_password_callback = $algo["check_password_callback"];
+			$needs_rehash_callback = $algo["needs_rehash_callback"];
 			if(!$is_hash_callback($hash)){ continue; }
 			if($check_password_callback($password,$hash)){
-				$is_legacy_hash = $i>0;
+				$need_rehash = $i>0 || (bool)$needs_rehash_callback($hash);
 				return true;
 			}
 		}
@@ -93,7 +99,7 @@ class PasswordHashingMachine {
 		return false;
 	}
 
-  function checkPassword($password,$hash,&$is_legacy_hash = null){
-    return $this->verify($password,$hash,$is_legacy_hash);
+  function checkPassword($password,$hash,&$need_rehash = null){
+    return $this->verify($password,$hash,$need_rehash);
   }
 }
